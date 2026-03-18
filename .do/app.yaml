@@ -1,0 +1,16 @@
+name: cortexwave-website
+region: syd
+services:
+  - name: cortexwave-web
+    github:
+      repo: stahir90/cortexwave-website
+      branch: main
+      deploy_on_push: true
+    build_command: npm run build
+    run_command: npm start
+    environment_slug: node-js
+    http_port: 3000
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    routes:
+      - path: /
