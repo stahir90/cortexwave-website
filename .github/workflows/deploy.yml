@@ -1,0 +1,32 @@
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Deploy to DigitalOcean App Platform
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Trigger deployment
+        run: doctl apps create-deployment ${{ secrets.DIGITALOCEAN_APP_ID }} --wait
+
+      - name: Verify deployment
+        run: |
+          PHASE=$(doctl apps list-deployments ${{ secrets.DIGITALOCEAN_APP_ID }} --format Phase --no-header | head -1)
+          echo "Latest deployment phase: $PHASE"
+          if [ "$PHASE" != "ACTIVE" ]; then
+            echo "Deployment failed with phase: $PHASE"
+            exit 1
+          fi
+          echo "Deployment successful!"
