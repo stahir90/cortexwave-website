@@ -1,5 +1,10 @@
 name: cortexwave-website
 region: syd
+domains:
+  - domain: cortexwave.com.au
+    type: PRIMARY
+  - domain: www.cortexwave.com.au
+    type: ALIAS
 services:
   - name: cortexwave-web
     github:
@@ -14,3 +19,15 @@ services:
     instance_size_slug: basic-xxs
     routes:
       - path: /
+    envs:
+      - key: MAILERSEND_API_TOKEN
+        type: SECRET
+      - key: MAILERSEND_FROM_EMAIL
+        value: notifications@cortexwave.com.au
+        type: GENERAL
+      - key: MAILERSEND_FROM_NAME
+        value: CortexWave
+        type: GENERAL
+      - key: MAILERSEND_TO_EMAIL
+        value: tahirm.psn@gmail.com
+        type: GENERAL
