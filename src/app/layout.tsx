@@ -19,6 +19,10 @@ export const metadata: Metadata = {
     "VIN check",
     "PPSR",
   ],
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
   openGraph: {
     title: "CortexWave | Intelligent Software Solutions",
     description:
@@ -26,6 +30,21 @@ export const metadata: Metadata = {
     url: "https://cortexwave.com.au",
     siteName: "CortexWave",
     type: "website",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "CortexWave Logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "CortexWave | Intelligent Software Solutions",
+    description:
+      "Building intelligent software products for Australia. Home of CheckMyCars.",
+    images: ["/logo.png"],
   },
 };
 
