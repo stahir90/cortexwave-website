@@ -7,27 +7,43 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to DigitalOcean App Platform
+    name: Deploy to DigitalOcean Droplet
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install doctl
-        uses: digitalocean/action-doctl@v2
+      - name: Deploy and build on droplet
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.DO_SSH_PORT }}
+          script_stop: true
+          command_timeout: 8m
+          script: |
+            set -e
+            cd /opt/cortexwave
 
-      - name: Trigger deployment
-        run: doctl apps create-deployment ${{ secrets.DIGITALOCEAN_APP_ID }} --wait
+            echo "=== Pulling latest code ==="
+            git fetch origin main
+            git reset --hard origin/main
 
-      - name: Verify deployment
-        run: |
-          PHASE=$(doctl apps list-deployments ${{ secrets.DIGITALOCEAN_APP_ID }} --format Phase --no-header | head -1)
-          echo "Latest deployment phase: $PHASE"
-          if [ "$PHASE" != "ACTIVE" ]; then
-            echo "Deployment failed with phase: $PHASE"
-            exit 1
-          fi
-          echo "Deployment successful!"
+            echo "=== Building cortexwave ==="
+            cd /opt/checkmycars/deploy
+            docker compose build cortexwave
+
+            echo "=== Restarting cortexwave ==="
+            docker compose up -d cortexwave
+
+            echo "=== Health check ==="
+            sleep 5
+            if curl -sf http://localhost:3001 > /dev/null 2>&1; then
+              echo "CortexWave is healthy"
+            else
+              echo "CortexWave not responding"
+              docker logs deploy-cortexwave-1 --tail 30
+              exit 1
+            fi
+
+            echo "Deployment complete!"
